@@ -1,0 +1,6 @@
+SimpleITK
+numpy
+torch
+monai
+scipy
+nnunetv2
