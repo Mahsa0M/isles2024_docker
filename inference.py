@@ -57,13 +57,6 @@ def run():
     sitk.WriteImage(preprocessed_ncct, RESOURCE_PATH / 'input' / 'isles_0001_0000.nii.gz')
     sitk.WriteImage(preprocessed_cta, RESOURCE_PATH / 'input' / 'isles_0001_0001.nii.gz')
 
-    # run the nnunet inference sh script
-    os.popen('sh nnunet_inference.sh').read()
-    # print(os.popen('ls resources').read())
-
-    # read the bl mask
-    bl_mask = sitk.ReadImage(RESOURCE_PATH / 'first_nnunet_result' / 'isles_0001.nii.gz')
-
     # load and preprocess the rest of the scans
     preprocessed_tmax = load_image_file_as_array(
         location=INPUT_PATH / "images/preprocessed-tmax-map",
@@ -83,11 +76,10 @@ def run():
     preprocessed_mtt = preprocess_scan(preprocessed_mtt, clip_min=0, clip_max=20)
 
     # save the scans to the nnunet raw folder
-    sitk.WriteImage(bl_mask, RESOURCE_PATH / 'input' / 'isles_0001_0002.nii.gz')
-    sitk.WriteImage(preprocessed_cbf, RESOURCE_PATH / 'input' / 'isles_0001_0003.nii.gz')
-    sitk.WriteImage(preprocessed_cbv, RESOURCE_PATH / 'input' / 'isles_0001_0004.nii.gz')
-    sitk.WriteImage(preprocessed_tmax, RESOURCE_PATH / 'input' / 'isles_0001_0005.nii.gz')
-    sitk.WriteImage(preprocessed_mtt, RESOURCE_PATH / 'input' / 'isles_0001_0006.nii.gz')
+    sitk.WriteImage(preprocessed_cbf, RESOURCE_PATH / 'input' / 'isles_0001_0002.nii.gz')
+    sitk.WriteImage(preprocessed_cbv, RESOURCE_PATH / 'input' / 'isles_0001_0003.nii.gz')
+    sitk.WriteImage(preprocessed_tmax, RESOURCE_PATH / 'input' / 'isles_0001_0004.nii.gz')
+    sitk.WriteImage(preprocessed_mtt, RESOURCE_PATH / 'input' / 'isles_0001_0005.nii.gz')
 
 
 
@@ -132,7 +124,7 @@ def predict_infarct(RESOURCE_PATH):
     input_list: [ncct, cta, bl mask]
     """
     # inference
-    os.popen('sh nnunet_inference_2.sh').read()
+    os.popen('sh nnunet_inference.sh').read()
 
     # read the prediction
     pred = sitk.ReadImage(RESOURCE_PATH / 'second_nnunet_result' / 'isles_0001.nii.gz')
