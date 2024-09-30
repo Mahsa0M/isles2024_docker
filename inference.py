@@ -21,9 +21,6 @@ import shutil
 from pathlib import Path
 from glob import glob
 import SimpleITK as sitk
-import json
-import monai
-import torch
 import numpy as np
 import os
 from scipy.ndimage.morphology import binary_fill_holes
@@ -41,46 +38,40 @@ def run():
     registered_cta = load_image_file_as_array(
         location=INPUT_PATH / "images/preprocessed-CT-angiography",
     )
+    registered_tmax = load_image_file_as_array(
+        location=INPUT_PATH / "images/preprocessed-tmax-map",
+    )
+    registered_cbf = load_image_file_as_array(
+        location=INPUT_PATH / "images/preprocessed-cbf-map",
+    )
+    registered_cbv = load_image_file_as_array(
+        location=INPUT_PATH / "images/preprocessed-cbv-map",
+    )
+    registered_mtt = load_image_file_as_array(
+        location=INPUT_PATH / "images/preprocessed-mtt-map",
+    )
 
     # Preprocess the input data
     preprocessed_ncct = preprocess_scan(ncct, clip_min=0, clip_max=100)
     preprocessed_cta = preprocess_scan(registered_cta, clip_min=0, clip_max=200)
+    preprocessed_tmax = preprocess_scan(registered_tmax, clip_min=0, clip_max=20)
+    preprocessed_cbf = preprocess_scan(registered_cbf, clip_min=0, clip_max=400)
+    preprocessed_cbv = preprocess_scan(registered_cbv, clip_min=0, clip_max=400)
+    preprocessed_mtt = preprocess_scan(registered_mtt, clip_min=0, clip_max=20)
 
-    # Get bl mask from nnunet inference
-    # create the raw data and result folders
+    # create the raw data and result folders for nnunet inference
     nnunet_raw_data_path = RESOURCE_PATH / 'input'
     if not os.path.exists(nnunet_raw_data_path):
         os.mkdir(nnunet_raw_data_path)
         os.mkdir(RESOURCE_PATH / 'nnunet_preprocessed')
 
-    # move the preprocessed images to the raw data folder
-    sitk.WriteImage(preprocessed_ncct, RESOURCE_PATH / 'input' / 'isles_0001_0000.nii.gz')
-    sitk.WriteImage(preprocessed_cta, RESOURCE_PATH / 'input' / 'isles_0001_0001.nii.gz')
-
-    # load and preprocess the rest of the scans
-    preprocessed_tmax = load_image_file_as_array(
-        location=INPUT_PATH / "images/preprocessed-tmax-map",
-    )
-    preprocessed_cbf = load_image_file_as_array(
-        location=INPUT_PATH / "images/preprocessed-cbf-map",
-    )
-    preprocessed_cbv = load_image_file_as_array(
-        location=INPUT_PATH / "images/preprocessed-cbv-map",
-    )
-    preprocessed_mtt = load_image_file_as_array(
-        location=INPUT_PATH / "images/preprocessed-mtt-map",
-    )
-    preprocessed_tmax = preprocess_scan(preprocessed_tmax, clip_min=0, clip_max=20)
-    preprocessed_cbf = preprocess_scan(preprocessed_cbf, clip_min=0, clip_max=400)
-    preprocessed_cbv = preprocess_scan(preprocessed_cbv, clip_min=0, clip_max=400)
-    preprocessed_mtt = preprocess_scan(preprocessed_mtt, clip_min=0, clip_max=20)
-
-    # save the scans to the nnunet raw folder
-    sitk.WriteImage(preprocessed_cbf, RESOURCE_PATH / 'input' / 'isles_0001_0002.nii.gz')
-    sitk.WriteImage(preprocessed_cbv, RESOURCE_PATH / 'input' / 'isles_0001_0003.nii.gz')
-    sitk.WriteImage(preprocessed_tmax, RESOURCE_PATH / 'input' / 'isles_0001_0004.nii.gz')
-    sitk.WriteImage(preprocessed_mtt, RESOURCE_PATH / 'input' / 'isles_0001_0005.nii.gz')
-
+    # move the preprocessed images to the raw data folder for nnunet inference
+    sitk.WriteImage(preprocessed_ncct, nnunet_raw_data_path / 'isles_0001_0000.nii.gz')
+    sitk.WriteImage(preprocessed_cta, nnunet_raw_data_path / 'isles_0001_0001.nii.gz')
+    sitk.WriteImage(preprocessed_cbf, nnunet_raw_data_path / 'isles_0001_0002.nii.gz')
+    sitk.WriteImage(preprocessed_cbv, nnunet_raw_data_path / 'isles_0001_0003.nii.gz')
+    sitk.WriteImage(preprocessed_tmax, nnunet_raw_data_path / 'isles_0001_0004.nii.gz')
+    sitk.WriteImage(preprocessed_mtt, nnunet_raw_data_path / 'isles_0001_0005.nii.gz')
 
 
     # prediction
@@ -121,13 +112,14 @@ def write_array_as_image_file(*, location, array):
 
 def predict_infarct(RESOURCE_PATH):
     """
-    input_list: [ncct, cta, bl mask]
+    Runs a file with the necessary commands to perform the inference using nnunet
+    RESOURCE_PATH: where nnunet results will be saved.
     """
     # inference
     os.popen('sh nnunet_inference.sh').read()
 
     # read the prediction
-    pred = sitk.ReadImage(RESOURCE_PATH / 'second_nnunet_result' / 'isles_0001.nii.gz')
+    pred = sitk.ReadImage(RESOURCE_PATH / 'nnunet_result' / 'isles_0001.nii.gz')
     pred_np = sitk.GetArrayFromImage(pred)
 
     return pred_np
