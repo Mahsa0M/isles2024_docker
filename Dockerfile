@@ -12,9 +12,6 @@ WORKDIR /opt/app
 COPY --chown=user:user requirements.txt /opt/app/
 COPY --chown=user:user resources /opt/app/resources
 COPY --chown=user:user nnunet_inference.sh /opt/app/
-COPY --chown=user:user nnunet_inference_2.sh /opt/app/
-
-#RUN python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 # You can add any Python dependencies to requirements.txt
 RUN python -m pip install \
@@ -26,5 +23,4 @@ RUN python -m pip install \
 COPY --chown=user:user inference.py /opt/app/
 
 
-#ENTRYPOINT ["python", "inference.py"]
 CMD ["python", "inference.py"]
