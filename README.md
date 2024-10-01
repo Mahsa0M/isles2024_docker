@@ -22,7 +22,7 @@ If you are willing to upload your data to the grand-challenge website, you can u
 **Note:** The docker file is designed for Linux environment. In case you are working on a Windows system, you need to install Windows subsystem for Linux (WSL) first. A guide can be found [here](https://learn.microsoft.com/en-us/windows/wsl/install). Also, you need to install Docker desktop ([guide](https://docs.docker.com/desktop/install/windows-install/). On Linux, you need to install the Docker engine for Linux (guide for Ubuntu [here](https://docs.docker.com/engine/install/ubuntu/). 
 
 1. Install this repository.
-2. Download the trained nnU-Net weights from [here](https://drive.google.com/file/d/1kAFSgQdMpJ4HQQ9wZWiWGXgr7_rUyP_K/view?usp=drive_link).
+2. Download the trained nnU-Net weights from [here](https://drive.google.com/file/d/1i9GvcanpopV-M6omJ8w-NbNv4ZoLyKnM/view?usp=sharing).
 3. Place the zipped model in the `resources` folder.
 4. Place the co-registered scans in the `test/input/images` folder in their corresponding folders. There should be only one image per folder (this Docker is designed to handle one patient at a time). The images should be of `.mha` format.
 5. Go to the folder location containing this repository in terminal (or WSL terminal if you are using Windows).
